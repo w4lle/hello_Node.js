@@ -3,7 +3,7 @@ let superagent = require('superagent');
 let cheerio = require('cheerio');
 let fs = require('fs');
 
-let target = 'https://cnodejs.org/';
+let target = 'http://cnodejs.org';
 var iterms = [];
 
 const TARGET_FILE = 'output.txt';
@@ -22,6 +22,10 @@ function writeFile(data) {
     ws.end();
 }
 
+function getUserName(s) {
+    return s.substring(s.lastIndexOf('/') + 1);
+}
+
 app.get('/', (req, res, next) => {
     console.log('开始抓取' + target);
     superagent.get(target)
@@ -35,11 +39,12 @@ app.get('/', (req, res, next) => {
             // 剩下就都是 jquery 的内容了
             let $ = cheerio.load(sres.text);
             //# ->id  . -> class
-            $('#topic_list .topic_title').each((id, element) => {
+            $('#topic_list .cell').each((id, element) => {
                 let $element = $(element);
                 iterms.push({
-                    title: $element.attr('title'),
-                    href: $element.attr('href')
+                    user : getUserName($element.find('.user_avatar').attr('href')),
+                    title: target + $element.find('.topic_title').attr('title'),
+                    href: target + $element.find('.topic_title').attr('href')
                 });
             });
             writeFile(iterms);
